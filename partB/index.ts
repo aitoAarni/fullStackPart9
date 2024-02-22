@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json());
 interface request {
     dailyExercises: string[];
-    target: string;
+    target: string; // testing
 }
 
 app.post('/exercises', (req, res) => {
