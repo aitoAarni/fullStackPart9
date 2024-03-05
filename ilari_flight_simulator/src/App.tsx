@@ -1,35 +1,24 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import CreateEntry from "./components/CreateEntry";
+import { SensitiveDiaryEntry } from "./types";
+import { getAllDiaries } from "./fetch_utils/diaries";
+import DisplayDiaries from "./components/DisplayDiaries";
 
 function App() {
-  const [count, setCount] = useState(0)
-
+  const [diaries, setDiaries] = useState<SensitiveDiaryEntry[]>([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      return await getAllDiaries();
+    };
+    fetchData().then((newDiaries) => setDiaries(newDiaries));
+  }, []);
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <CreateEntry diaries={diaries} setDiaries={setDiaries} />
+      <h1>Diary Entries</h1>
+      <DisplayDiaries diaries={diaries} />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
