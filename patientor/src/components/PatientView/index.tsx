@@ -3,7 +3,7 @@ import { Gender, Patient } from "../../types";
 import FemaleIcon from "@mui/icons-material/Female";
 import MaleIcon from "@mui/icons-material/Male";
 import AndroidIcon from "@mui/icons-material/Android";
-import { HospitalEntry } from "./DisplayEntry";
+import { EntryDetails } from "../../utils";
 
 const DisplayPatient = ({ patient }: { patient: Patient | undefined }) => {
   if (patient === undefined) {
@@ -40,7 +40,7 @@ const DisplayPatient = ({ patient }: { patient: Patient | undefined }) => {
         <br />
         <List>
           {patient.entries.map((entry) => (
-            <HospitalEntry key={entry.id} entry={entry} />
+            <EntryDetails key={entry.id} entry={entry} />
           ))}
         </List>
       </div>

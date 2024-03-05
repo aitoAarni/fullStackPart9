@@ -11,6 +11,7 @@ import { toNewPatient } from "../utils";
 const router = express.Router();
 
 router.get("/", (_req, res) => {
+  console.log(getPatientInfos());
   res.send(getPatientInfos());
 });
 

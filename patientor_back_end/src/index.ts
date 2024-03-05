@@ -7,8 +7,8 @@ import cors from "cors";
 const app = express();
 
 const PORT: number = 3001;
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 
 app.get("/api/ping", (_req: Request, res: Response) => {
   console.log("heloooooojaa");
