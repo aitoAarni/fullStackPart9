@@ -1,7 +1,8 @@
 import express from "express";
 import {
   addNewPatient,
-  getNonSensitivePatientInfos,
+  getPatientById,
+  getPatientInfos,
 } from "../services/patients";
 import { toNewPatient } from "../utils";
 
@@ -10,7 +11,7 @@ import { toNewPatient } from "../utils";
 const router = express.Router();
 
 router.get("/", (_req, res) => {
-  res.send(getNonSensitivePatientInfos());
+  res.send(getPatientInfos());
 });
 
 router.post("/", (req, res) => {
@@ -24,6 +25,18 @@ router.post("/", (req, res) => {
       errorMessage += " Error: " + error.message;
     }
     res.status(400).send(errorMessage);
+  }
+});
+
+router.get("/:id", (req, res) => {
+  try {
+    const patient = getPatientById(req.params.id);
+    res.json(patient);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      res.status(400).send(error.message);
+    }
+    res.status(400).send("Something went wrong");
   }
 });
 
