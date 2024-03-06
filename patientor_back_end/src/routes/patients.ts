@@ -41,6 +41,8 @@ router.get("/:id", (req, res) => {
   }
 });
 
-router.post("/:id/entries", (req, res) => {});
+router.post("/:id/entries", (req, res) => {
+  
+});
 
 export default router;
