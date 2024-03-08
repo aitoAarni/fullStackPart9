@@ -110,6 +110,7 @@ const parseHealthCheckRating = (rating: unknown): HealthCheckRating => {
   if (rating && isNumber(rating) && isHealthCheckRating(rating)) {
     return rating;
   }
+  console.log(rating);
   throw new Error("Invalid or missing health check rating");
 };
 
