@@ -1,10 +1,11 @@
 import express from "express";
 import {
+  addNewEntry,
   addNewPatient,
   getPatientById,
   getPatientInfos,
 } from "../services/patients";
-import { toNewPatient } from "../utils";
+import { toNewEntry, toNewPatient } from "../utils";
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
@@ -42,7 +43,16 @@ router.get("/:id", (req, res) => {
 });
 
 router.post("/:id/entries", (req, res) => {
-  
+  try {
+    const newEntry = toNewEntry(req.body);
+    const entry = addNewEntry(req.params.id, newEntry);
+    res.json(entry);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      res.status(400).send(error.message);
+    }
+    res.status(400).send("Something went wrong");
+  }
 });
 
 export default router;

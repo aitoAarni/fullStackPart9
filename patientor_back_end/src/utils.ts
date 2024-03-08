@@ -3,7 +3,12 @@ import {
   Gender,
   HealthCheckRating,
   SickLeave,
-  newPatient,
+  NewPatient,
+  NewEntry,
+  NewHealthCheckEntry,
+  NewOccupationalHealthcareEntry,
+  NewHostpitalEntry,
+  NewBaseEntry,
 } from "./types";
 
 const isString = (text: unknown): text is string => {
@@ -115,7 +120,24 @@ const parseSickLeave = (sickLeave: unknown): SickLeave => {
   throw new Error("Invalid or undefined sick leave");
 };
 
-export const toNewPatient = (object: unknown): newPatient => {
+const parseDischarge = (
+  discharge: unknown
+): { date: string; criteria: string } => {
+  if (
+    discharge &&
+    isObject(discharge) &&
+    "date" in discharge &&
+    isString(discharge.date) &&
+    isDate(discharge.date) &&
+    "criteria" in discharge &&
+    isString(discharge.criteria)
+  ) {
+    return { date: discharge.date, criteria: discharge.criteria };
+  }
+  throw new Error("Invalid or undefined discharge");
+};
+
+export const toNewPatient = (object: unknown): NewPatient => {
   if (!object || typeof object != "object") {
     throw new Error("Incorrect or missing data");
   }
@@ -126,7 +148,7 @@ export const toNewPatient = (object: unknown): newPatient => {
     "gender" in object &&
     "occupation" in object
   ) {
-    const newPatientEntry: newPatient = {
+    const newPatientEntry: NewPatient = {
       name: parseName(object.name),
       dateOfBirth: parseDate(object.dateOfBirth),
       ssn: parseSsn(object.ssn),
@@ -137,4 +159,93 @@ export const toNewPatient = (object: unknown): newPatient => {
     return newPatientEntry;
   }
   throw new Error("Incorrect data. Some fields are missing");
+};
+
+const toNewBaseEntry = (entry: unknown): NewBaseEntry => {
+  if (!entry || typeof entry != "object") {
+    throw new Error("Incorrect or missing data");
+  }
+  if ("description" in entry && "date" in entry && "specialist" in entry) {
+    const newBaseEntry: NewBaseEntry = {
+      description: parseDescription(entry.description),
+      date: parseDate(entry.date),
+      specialist: parseSpecialist(entry.specialist),
+    };
+    if ("diagnosisCodes" in entry) {
+      newBaseEntry.diagnosisCodes = parseDiagnosisCodes(entry.diagnosisCodes);
+    }
+    return newBaseEntry;
+  }
+  throw new Error("Incorrect data. Some fields are missing");
+};
+
+const toNewHealthCheckEntry = (entry: unknown): NewHealthCheckEntry => {
+  if (!entry || typeof entry !== "object") {
+    throw new Error("Incorrect or missing data");
+  }
+  const newBaseEntry = toNewBaseEntry(entry);
+  if ("healthCheckRating" in entry) {
+    const newHealthCheckEntry: NewHealthCheckEntry = {
+      ...newBaseEntry,
+      healthCheckRating: parseHealthCheckRating(entry.healthCheckRating),
+      type: "HealthCheck",
+    };
+    return newHealthCheckEntry;
+  }
+  throw new Error("Incorrect data. Some fields are missing");
+};
+
+const toNewOccupationalHealthcareEntry = (
+  entry: unknown
+): NewOccupationalHealthcareEntry => {
+  if (!entry || typeof entry !== "object") {
+    throw new Error("Incorrect or missing data");
+  }
+  const newBaseEntry = toNewBaseEntry(entry);
+  if ("employerName" in entry) {
+    const newOccupationalHealthcareEntry: NewOccupationalHealthcareEntry = {
+      ...newBaseEntry,
+      employerName: parseName(entry.employerName),
+      type: "OccupationalHealthcare",
+    };
+    if ("sickLeave" in entry) {
+      newOccupationalHealthcareEntry.sickLeave = parseSickLeave(
+        entry.sickLeave
+      );
+    }
+    return newOccupationalHealthcareEntry;
+  }
+  throw new Error("Incorrect data. Some fields are missing");
+};
+
+const toNewHospitalEntry = (entry: unknown): NewHostpitalEntry => {
+  if (!entry || typeof entry !== "object") {
+    throw new Error("Incorrect or missing data");
+  }
+  const newBaseEntry = toNewBaseEntry(entry);
+  if ("discharge" in entry) {
+    const newHospitalEntry: NewHostpitalEntry = {
+      ...newBaseEntry,
+      discharge: parseDischarge(entry.discharge),
+      type: "Hospital",
+    };
+    return newHospitalEntry;
+  }
+  throw new Error("Incorrect data. Some fields are missing");
+};
+
+export const toNewEntry = (entry: unknown): NewEntry => {
+  if (!entry || typeof entry !== "object" || !("type" in entry)) {
+    throw new Error("Incorrect or missing data");
+  }
+  switch (entry.type) {
+    case "HealthCheck":
+      return toNewHealthCheckEntry(entry);
+    case "OccupationalHealthcare":
+      return toNewOccupationalHealthcareEntry(entry);
+    case "Hospital":
+      return toNewHospitalEntry(entry);
+    default:
+      throw new Error(`Unidentified type: ${entry.type}`);
+  }
 };
