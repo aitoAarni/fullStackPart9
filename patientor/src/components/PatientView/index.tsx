@@ -4,6 +4,7 @@ import FemaleIcon from "@mui/icons-material/Female";
 import MaleIcon from "@mui/icons-material/Male";
 import AndroidIcon from "@mui/icons-material/Android";
 import { EntryDetails } from "../../utils";
+import CreateEntry from "./CreateEntry";
 
 const DisplayPatient = ({ patient }: { patient: Patient | undefined }) => {
   if (patient === undefined) {
@@ -33,6 +34,9 @@ const DisplayPatient = ({ patient }: { patient: Patient | undefined }) => {
         <Typography variant="body1">
           occupation:&nbsp;{patient.occupation}
         </Typography>
+      </div>
+      <div>
+        <CreateEntry />
       </div>
       <div>
         <br />
