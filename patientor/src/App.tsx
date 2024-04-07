@@ -14,20 +14,22 @@ const App = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
 
   useEffect(() => {
-    void axios.get<void>(`${apiBaseUrl}/ping`);
+    axios.get<void>(`${apiBaseUrl}/ping`);
 
-    const fetchPatientList = async () => {
-      const patients = await patientService.getAll();
+    patientService.getAll().then((patients) => {
       setPatients(patients);
-    };
-
-    void fetchPatientList();
+    });
   }, []);
 
   const patientMatch = useMatch("/patient/:id");
-  const patient = patientMatch
-    ? patients.find((patient) => patient.id === patientMatch.params.id)
-    : undefined;
+  const getPatient = () => {
+    console.log("patientssssss", patients);
+    const patient = patientMatch
+      ? patients.find((patient) => patient.id === patientMatch.params.id)
+      : undefined;
+    console.log("patienttiiii123: ", patient);
+    return patient;
+  };
 
   return (
     <div className="App">
@@ -48,7 +50,7 @@ const App = () => {
           />
           <Route
             path="/patient/:id"
-            element={<DisplayPatient patient={patient} />}
+            element={<DisplayPatient getPatient={getPatient} />}
           />
         </Routes>
       </Container>

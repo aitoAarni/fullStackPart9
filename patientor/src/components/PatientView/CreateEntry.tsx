@@ -1,21 +1,60 @@
 import { Button, ButtonGroup, TextField } from "@mui/material";
 import { useState } from "react";
+import { EntryType, NewEntry } from "../../types";
 
-const CreateEntry = () => {
-  const [type, setType] = useState("HealthCheck");
+const CreateEntry = ({
+  createEntry,
+}: {
+  createEntry: (entry: NewEntry) => void;
+}) => {
+  const [type, setType] = useState<EntryType>("HealthCheck");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [specialist, setSpecialist] = useState("");
-  const [diagnosisCodes, setDiagnosisCodes] = useState<string>("");
-  const [healthRating, setHealthRating] = useState("");
+  const [rawDiagnosisCodes, setDiagnosisCodes] = useState<string>("");
+  const [healthRating, setHealthRating] = useState<number>(1);
   const [employerName, setEmployerName] = useState("");
-  const [sickLeave, setSickLeave] = useState("");
+  const [sickLeaveStart, setSickLeaveStart] = useState("");
+  const [sickLeaveEnd, setSickLeaveEnd] = useState("");
   const [dischargeDate, setDischargeDate] = useState("");
   const [dischargeCriteria, setDischargeCriteria] = useState("");
 
-  const createEntry = () => {
-    console.log(type);
+  const assembleEntry = (): NewEntry => {
+    const diagnosisCodes = rawDiagnosisCodes.split(" ");
+    const entry = {
+      description,
+      date,
+      specialist,
+      diagnosisCodes,
+    };
+    switch (type) {
+      case "HealthCheck":
+        return {
+          ...entry,
+          healthCheckRating: healthRating,
+          type: "HealthCheck",
+        };
+
+      case "OccupationalHealthcare":
+        return {
+          ...entry,
+          sickLeave: { startDate: sickLeaveStart, endDate: sickLeaveEnd },
+          employerName,
+          type: "OccupationalHealthcare",
+        };
+      case "Hospital":
+        return {
+          ...entry,
+          discharge: { date: dischargeDate, criteria: dischargeCriteria },
+          type: "Hospital",
+        };
+      default:
+        throw new Error(
+          `Unhandled discriminated union member: ${JSON.stringify(type)}`
+        );
+    }
   };
+
   return (
     <>
       <div>
@@ -28,7 +67,10 @@ const CreateEntry = () => {
         </ButtonGroup>
       </div>
       <form
-        onSubmit={createEntry}
+        onSubmit={(event) => {
+          event.preventDefault();
+          createEntry(assembleEntry());
+        }}
         style={{ display: "flex", flexDirection: "column" }}
       >
         <TextField
@@ -49,7 +91,7 @@ const CreateEntry = () => {
         />
         <TextField
           label="Diagnosis codes"
-          value={diagnosisCodes}
+          value={rawDiagnosisCodes}
           onChange={(event) => setDiagnosisCodes(event.target.value)}
         />
 
@@ -60,8 +102,10 @@ const CreateEntry = () => {
           <OccupationalEntry
             employerName={employerName}
             setEmployerName={setEmployerName}
-            sickLeave={sickLeave}
-            setSickLeave={setSickLeave}
+            sickLeaveStart={sickLeaveStart}
+            setSickLeaveStart={setSickLeaveStart}
+            sickLeaveEnd={sickLeaveEnd}
+            setSickLeaveEnd={setSickLeaveEnd}
           />
         )}
         {type === "Hospital" && (
@@ -72,6 +116,7 @@ const CreateEntry = () => {
             setCriteria={setDischargeCriteria}
           />
         )}
+        <Button type="submit">Submit</Button>
       </form>
     </>
   );
@@ -81,14 +126,14 @@ const HealthEntry = ({
   rating,
   setRating,
 }: {
-  rating: string;
-  setRating: React.Dispatch<React.SetStateAction<string>>;
+  rating: number;
+  setRating: React.Dispatch<React.SetStateAction<number>>;
 }) => {
   return (
     <TextField
       label="Health check rating"
       value={rating}
-      onChange={(event) => setRating(event.target.value)}
+      onChange={(event) => setRating(parseInt(event.target.value))}
     />
   );
 };
@@ -96,13 +141,17 @@ const HealthEntry = ({
 const OccupationalEntry = ({
   employerName,
   setEmployerName,
-  sickLeave,
-  setSickLeave,
+  sickLeaveStart,
+  sickLeaveEnd,
+  setSickLeaveStart,
+  setSickLeaveEnd,
 }: {
   employerName: string;
   setEmployerName: React.Dispatch<React.SetStateAction<string>>;
-  sickLeave: string;
-  setSickLeave: React.Dispatch<React.SetStateAction<string>>;
+  sickLeaveStart: string;
+  setSickLeaveStart: React.Dispatch<React.SetStateAction<string>>;
+  sickLeaveEnd: string;
+  setSickLeaveEnd: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   return (
     <>
@@ -113,8 +162,13 @@ const OccupationalEntry = ({
       />
       <TextField
         label="Sick leave"
-        value={sickLeave}
-        onChange={(event) => setSickLeave(event.target.value)}
+        value={sickLeaveStart}
+        onChange={(event) => setSickLeaveStart(event.target.value)}
+      />
+      <TextField
+        label="Sick leave"
+        value={sickLeaveEnd}
+        onChange={(event) => setSickLeaveEnd(event.target.value)}
       />
     </>
   );

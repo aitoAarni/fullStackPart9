@@ -1,15 +1,49 @@
-import { List, Typography } from "@mui/material";
-import { Gender, Patient } from "../../types";
+import { Alert, List, Typography } from "@mui/material";
+import { Gender, NewEntry, Patient } from "../../types";
 import FemaleIcon from "@mui/icons-material/Female";
 import MaleIcon from "@mui/icons-material/Male";
 import AndroidIcon from "@mui/icons-material/Android";
 import { EntryDetails } from "../../utils";
 import CreateEntry from "./CreateEntry";
+import { create } from "../../services/entries";
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 
-const DisplayPatient = ({ patient }: { patient: Patient | undefined }) => {
+const DisplayPatient = ({
+  getPatient,
+}: {
+  getPatient: () => Patient | undefined;
+}) => {
+  const patient = getPatient();
+  const [displayError, setDisplayError] = useState<string | null>(null);
+  console.log("entries-1: ", patient?.entries);
+  const [entries, setEntries] = useState(patient?.entries);
+
+  console.log("patient1: ", patient);
+  console.log("entries0: ", patient?.entries);
+  console.log("entries1: ", entries);
+  useEffect(() => {
+    setTimeout(() => {
+      setDisplayError(null);
+    }, 5000);
+  }, [displayError]);
+
+  const { id } = useParams();
   if (patient === undefined) {
     return <Typography>The patient didn't match any id</Typography>;
   }
+  const createEntry = (newEntry: NewEntry) => {
+    if (typeof id != "string") {
+      setDisplayError("Invalid url for the diagnosis");
+      return;
+    }
+    create(newEntry, id)
+      .then((entry): void => {
+        patient.entries.push(entry);
+        setEntries(entries?.concat(entry));
+      })
+      .catch((error) => setDisplayError(error.response.data));
+  };
   const getGenderIcon = (gender: Gender) => {
     switch (gender) {
       case Gender.Male:
@@ -36,9 +70,12 @@ const DisplayPatient = ({ patient }: { patient: Patient | undefined }) => {
         </Typography>
       </div>
       <div>
-        <CreateEntry />
+        <CreateEntry createEntry={createEntry} />
       </div>
       <div>
+        <div>
+          {displayError && <Alert severity="error">{displayError}</Alert>}
+        </div>
         <br />
         <Typography variant="h5">entries</Typography>
         <br />
