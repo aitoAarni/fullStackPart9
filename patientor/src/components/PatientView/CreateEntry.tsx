@@ -1,4 +1,12 @@
-import { Button, ButtonGroup, TextField } from "@mui/material";
+import {
+  Button,
+  ButtonGroup,
+  Input,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+} from "@mui/material";
 import { useState } from "react";
 import { EntryType, NewEntry } from "../../types";
 
@@ -11,16 +19,14 @@ const CreateEntry = ({
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [specialist, setSpecialist] = useState("");
-  const [rawDiagnosisCodes, setDiagnosisCodes] = useState<string>("");
+  const [rawDiagnosisCodes, setDiagnosisCodes] = useState<Array<string>>([]);
   const [healthRating, setHealthRating] = useState<number>(1);
   const [employerName, setEmployerName] = useState("");
   const [sickLeaveStart, setSickLeaveStart] = useState("");
   const [sickLeaveEnd, setSickLeaveEnd] = useState("");
   const [dischargeDate, setDischargeDate] = useState("");
   const [dischargeCriteria, setDischargeCriteria] = useState("");
-
   const assembleEntry = (): NewEntry => {
-    const diagnosisCodes = rawDiagnosisCodes.split(" ");
     const entry = {
       description,
       date,
@@ -54,7 +60,9 @@ const CreateEntry = ({
         );
     }
   };
-
+  console.log(date);
+  console.log(date);
+  const diagnosisCodes = ["Z57.1", "N30.0", "L60.1"];
   return (
     <>
       <div>
@@ -73,27 +81,40 @@ const CreateEntry = ({
         }}
         style={{ display: "flex", flexDirection: "column" }}
       >
+        <InputLabel>Description</InputLabel>
         <TextField
-          label="Description"
           value={description}
           onChange={({ target }) => setDescription(target.value)}
         />
-        <TextField
-          label="Date"
-          placeholder="yyyy-mm-dd"
+        <InputLabel>Date</InputLabel>
+        <Input
+          type="date"
           value={date}
           onChange={(event) => setDate(event.target.value)}
         />
+        <InputLabel>Specialist</InputLabel>
         <TextField
-          label="Specialist"
           value={specialist}
           onChange={({ target }) => setSpecialist(target.value)}
         />
-        <TextField
-          label="Diagnosis codes"
+        <InputLabel>Diagnosis codes</InputLabel>
+        <Select
+          multiple
           value={rawDiagnosisCodes}
-          onChange={(event) => setDiagnosisCodes(event.target.value)}
-        />
+          onChange={(event) =>
+            setDiagnosisCodes(
+              typeof event.target.value === "string"
+                ? event.target.value.split(",")
+                : event.target.value
+            )
+          }
+        >
+          {diagnosisCodes.map((code) => (
+            <MenuItem key={code} value={code}>
+              {code}
+            </MenuItem>
+          ))}
+        </Select>
 
         {type === "HealthCheck" && (
           <HealthEntry rating={healthRating} setRating={setHealthRating} />
@@ -130,11 +151,25 @@ const HealthEntry = ({
   setRating: React.Dispatch<React.SetStateAction<number>>;
 }) => {
   return (
-    <TextField
-      label="Health check rating"
-      value={rating}
-      onChange={(event) => setRating(parseInt(event.target.value))}
-    />
+    <>
+      <InputLabel>Health check rating</InputLabel>
+      <Select
+        value={rating}
+        onChange={(event) =>
+          setRating(
+            typeof event.target.value == "string"
+              ? parseInt(event.target.value)
+              : event.target.value
+          )
+        }
+      >
+        {[1, 2, 3, 4].map((num) => (
+          <MenuItem key={num} value={num}>
+            {num}
+          </MenuItem>
+        ))}
+      </Select>
+    </>
   );
 };
 
@@ -155,18 +190,20 @@ const OccupationalEntry = ({
 }) => {
   return (
     <>
+      <InputLabel>Emplyer</InputLabel>
       <TextField
-        label="Employer name"
         value={employerName}
         onChange={(event) => setEmployerName(event.target.value)}
       />
-      <TextField
-        label="Sick leave"
+      <InputLabel>Sick leave start</InputLabel>
+      <Input
+        type="date"
         value={sickLeaveStart}
         onChange={(event) => setSickLeaveStart(event.target.value)}
       />
-      <TextField
-        label="Sick leave"
+      <InputLabel>Sick leave end</InputLabel>
+      <Input
+        type="date"
         value={sickLeaveEnd}
         onChange={(event) => setSickLeaveEnd(event.target.value)}
       />
@@ -187,13 +224,14 @@ const HospitalEntry = ({
 }) => {
   return (
     <>
-      <TextField
-        label="Discharge date"
+      <InputLabel>Discharge date</InputLabel>
+      <Input
+        type="date"
         value={date}
         onChange={(event) => setDate(event.target.value)}
       />
+      <InputLabel>Discharge criteria</InputLabel>
       <TextField
-        label="Discharge criteria"
         value={criteria}
         onChange={(eent) => setCriteria(eent.target.value)}
       />
